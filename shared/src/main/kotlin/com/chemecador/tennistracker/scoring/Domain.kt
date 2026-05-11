@@ -6,8 +6,6 @@ enum class Side {
     val other: Side get() = if (this == A) B else A
 }
 
-enum class Sport { TENNIS, PADEL }
-
 enum class FinalSetMode {
     ADVANTAGE,
     TIEBREAK_7,
@@ -15,7 +13,6 @@ enum class FinalSetMode {
 }
 
 data class MatchConfig(
-    val sport: Sport,
     val bestOfSets: Int,
     val finalSetMode: FinalSetMode,
     val goldenPoint: Boolean,

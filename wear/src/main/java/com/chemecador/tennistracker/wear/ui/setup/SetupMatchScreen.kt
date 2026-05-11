@@ -23,13 +23,11 @@ import androidx.wear.compose.material3.SwitchButton
 import androidx.wear.compose.material3.Text
 import com.chemecador.tennistracker.scoring.FinalSetMode
 import com.chemecador.tennistracker.scoring.MatchConfig
-import com.chemecador.tennistracker.scoring.Sport
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 
 @Composable
 fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
-    var sport by remember { mutableStateOf(Sport.TENNIS) }
     var bestOfSets by remember { mutableStateOf(3) }
     var finalSetMode by remember { mutableStateOf(FinalSetMode.TIEBREAK_7) }
     var goldenPoint by remember { mutableStateOf(false) }
@@ -53,16 +51,6 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
                 )
             }
 
-            item { SectionLabel("Deporte") }
-            items(Sport.entries) { s ->
-                SwitchButton(
-                    checked = sport == s,
-                    onCheckedChange = { if (it) sport = s },
-                    label = { Text(s.displayName()) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
             item { SectionLabel("Sets a jugar") }
             items(listOf(1, 3, 5)) { n ->
                 SwitchButton(
@@ -83,16 +71,14 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
                 )
             }
 
-            if (sport == Sport.PADEL) {
-                item { SectionLabel("Punto de oro") }
-                item {
-                    SwitchButton(
-                        checked = goldenPoint,
-                        onCheckedChange = { goldenPoint = it },
-                        label = { Text(if (goldenPoint) "Activado" else "Desactivado") },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+            item { SectionLabel("Punto de oro") }
+            item {
+                SwitchButton(
+                    checked = goldenPoint,
+                    onCheckedChange = { goldenPoint = it },
+                    label = { Text(if (goldenPoint) "Activado" else "Desactivado") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
 
             item { Spacer(Modifier.height(4.dp)) }
@@ -102,10 +88,9 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
                     onClick = {
                         onStart(
                             MatchConfig(
-                                sport = sport,
                                 bestOfSets = bestOfSets,
                                 finalSetMode = finalSetMode,
-                                goldenPoint = sport == Sport.PADEL && goldenPoint,
+                                goldenPoint = goldenPoint,
                                 playerNameA = "A",
                                 playerNameB = "B",
                             )
@@ -130,11 +115,6 @@ private fun SectionLabel(text: String) {
             .padding(top = 4.dp),
         textAlign = TextAlign.Start,
     )
-}
-
-private fun Sport.displayName(): String = when (this) {
-    Sport.TENNIS -> "Tenis"
-    Sport.PADEL -> "Pádel"
 }
 
 private fun FinalSetMode.displayName(): String = when (this) {

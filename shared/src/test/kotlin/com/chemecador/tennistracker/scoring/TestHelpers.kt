@@ -3,7 +3,6 @@ package com.chemecador.tennistracker.scoring
 internal fun tennisBo3(
     finalSetMode: FinalSetMode = FinalSetMode.TIEBREAK_7,
 ): MatchConfig = MatchConfig(
-    sport = Sport.TENNIS,
     bestOfSets = 3,
     finalSetMode = finalSetMode,
     goldenPoint = false,
@@ -23,7 +22,6 @@ internal fun padelBo3(
     goldenPoint: Boolean = true,
     finalSetMode: FinalSetMode = FinalSetMode.SUPER_TIEBREAK_10,
 ): MatchConfig = MatchConfig(
-    sport = Sport.PADEL,
     bestOfSets = 3,
     finalSetMode = finalSetMode,
     goldenPoint = goldenPoint,
