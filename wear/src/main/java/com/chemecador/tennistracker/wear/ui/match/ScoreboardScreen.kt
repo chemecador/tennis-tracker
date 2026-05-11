@@ -1,7 +1,6 @@
 package com.chemecador.tennistracker.wear.ui.match
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -99,26 +98,34 @@ private fun SideZone(
 
 @Composable
 private fun CenterStrip(state: MatchState, onUndo: () -> Unit) {
+    val canUndo = state.history.isNotEmpty()
+    val undoColor = if (canUndo) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(28.dp)
+            .height(32.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .clickable { onUndo() }
-            .padding(horizontal = 24.dp),
-        contentAlignment = Alignment.Center,
+            .clickable(enabled = canUndo) { onUndo() }
+            .padding(horizontal = 16.dp),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = setsLine(state),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        Text(
+            text = "↶",
+            color = undoColor,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterStart),
+        )
+        Text(
+            text = setsLine(state),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.align(Alignment.Center),
+        )
     }
 }
 
