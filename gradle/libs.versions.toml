@@ -18,6 +18,13 @@ firebaseBom = "34.13.0"
 googleServices = "4.4.4"
 coroutinesPlayServices = "1.11.0"
 
+# Credential Manager (Google Sign-In on mobile)
+credentials = "1.6.0"
+googleId = "1.2.0"
+
+# Wear phone interactions (RemoteAuthClient OAuth on paired phone)
+wearPhoneInteractions = "1.1.0"
+
 # Tests
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -52,6 +59,14 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 
 # kotlinx-coroutines bridge for Google Play Services Task<T>
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+
+# credential manager (mobile Google Sign-In)
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleId" }
+
+# wear phone interactions (RemoteAuthClient)
+wear-phone-interactions = { group = "androidx.wear", name = "wear-phone-interactions", version.ref = "wearPhoneInteractions" }
 
 # tests
 junit = { group = "junit", name = "junit", version.ref = "junit" }

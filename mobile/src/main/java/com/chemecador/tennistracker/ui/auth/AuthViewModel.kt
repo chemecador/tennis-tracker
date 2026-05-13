@@ -36,6 +36,12 @@ class AuthViewModel(
 
     fun signInAsGuest() = launchAuth { repository.signInAnonymously() }
 
+    fun signInWithGoogle(idToken: String) = launchAuth { repository.signInWithGoogle(idToken) }
+
+    fun onAuthError(message: String) {
+        _error.value = message
+    }
+
     fun signOut() = repository.signOut()
 
     fun clearError() {

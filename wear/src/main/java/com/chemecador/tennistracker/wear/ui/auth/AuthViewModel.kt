@@ -24,12 +24,19 @@ class AuthViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun signInAsGuest() {
+    fun signInAsGuest() = launchAuth { repository.signInAnonymously() }
+
+    fun signInWithGoogle(idTokenProvider: suspend () -> String) = launchAuth {
+        val idToken = idTokenProvider()
+        repository.signInWithGoogle(idToken)
+    }
+
+    private fun launchAuth(block: suspend () -> Unit) {
         if (_isWorking.value) return
         viewModelScope.launch {
             _isWorking.value = true
             _error.value = null
-            runCatching { repository.signInAnonymously() }
+            runCatching { block() }
                 .onFailure { _error.value = it.message ?: "Sign-in failed" }
             _isWorking.value = false
         }

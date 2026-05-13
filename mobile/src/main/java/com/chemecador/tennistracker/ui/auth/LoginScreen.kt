@@ -18,21 +18,31 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chemecador.tennistracker.auth.GoogleCredentialClient
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(viewModel: AuthViewModel = viewModel()) {
     val isWorking by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val googleClient = remember(context) { GoogleCredentialClient(context) }
 
     var mode by rememberSaveable { mutableStateOf(AuthMode.LOGIN) }
     var email by rememberSaveable { mutableStateOf("") }
@@ -129,6 +139,24 @@ fun LoginScreen(viewModel: AuthViewModel = viewModel()) {
         }
 
         Spacer(Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = {
+                scope.launch {
+                    runCatching { googleClient.requestIdToken() }
+                        .onSuccess { viewModel.signInWithGoogle(it) }
+                        .onFailure {
+                            if (it !is GetCredentialCancellationException) {
+                                viewModel.onAuthError(it.message ?: "Google sign-in failed")
+                            }
+                        }
+                }
+            },
+            enabled = !isWorking,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Continuar con Google")
+        }
 
         OutlinedButton(
             onClick = { viewModel.signInAsGuest() },

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,6 +22,7 @@ import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import com.chemecador.tennistracker.wear.auth.WearGoogleAuth
 
 @Composable
 fun LoginScreen(
@@ -28,6 +31,8 @@ fun LoginScreen(
     val isWorking by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
+    val context = LocalContext.current
+    val googleAuth = remember(context) { WearGoogleAuth(context) }
 
     ScreenScaffold(scrollState = listState) { contentPadding ->
         ScalingLazyColumn(
@@ -56,15 +61,26 @@ fun LoginScreen(
             item { Spacer(Modifier.height(2.dp)) }
             item {
                 Button(
-                    onClick = { viewModel.signInAsGuest() },
+                    onClick = {
+                        viewModel.signInWithGoogle { googleAuth.signIn() }
+                    },
                     enabled = !isWorking,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     if (isWorking) {
                         CircularProgressIndicator()
                     } else {
-                        Text("Continuar como invitado")
+                        Text("Iniciar con Google")
                     }
+                }
+            }
+            item {
+                Button(
+                    onClick = { viewModel.signInAsGuest() },
+                    enabled = !isWorking,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Continuar como invitado")
                 }
             }
             error?.let { msg ->

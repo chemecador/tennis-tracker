@@ -2,6 +2,7 @@ package com.chemecador.tennistracker.wear.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -24,7 +25,9 @@ class AuthRepository(
         return requireNotNull(result.user)
     }
 
-    fun signOut() {
-        auth.signOut()
+    suspend fun signInWithGoogle(idToken: String): FirebaseUser {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val result = auth.signInWithCredential(credential).await()
+        return requireNotNull(result.user)
     }
 }
