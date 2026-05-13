@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -61,6 +62,10 @@ dependencies {
     implementation(libs.wear.compose.foundation)
     implementation(libs.wear.compose.material3)
     implementation(libs.wear.compose.navigation)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
 }

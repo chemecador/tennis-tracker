@@ -11,12 +11,15 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.chemecador.tennistracker.wear.ui.auth.AuthViewModel
+import com.chemecador.tennistracker.wear.ui.auth.LoginScreen
 import com.chemecador.tennistracker.wear.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.wear.ui.match.ScoreboardScreen
 import com.chemecador.tennistracker.wear.ui.setup.SetupMatchScreen
 import com.chemecador.tennistracker.wear.ui.summary.MatchSummaryScreen
 
 private object Routes {
+    const val LOGIN = "login"
     const val SETUP = "setup"
     const val MATCH = "match"
     const val SUMMARY = "summary"
@@ -27,8 +30,18 @@ fun TennisApp() {
     MaterialTheme {
         AppScaffold {
             val nav = rememberSwipeDismissableNavController()
+            val authVm: AuthViewModel = viewModel()
+            val user by authVm.user.collectAsStateWithLifecycle()
             val sessionVm: MatchSessionViewModel = viewModel()
             val state by sessionVm.state.collectAsStateWithLifecycle()
+
+            LaunchedEffect(user) {
+                if (user != null && nav.currentDestination?.route == Routes.LOGIN) {
+                    nav.navigate(Routes.SETUP) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            }
 
             LaunchedEffect(state?.winner) {
                 if (state?.winner != null && nav.currentDestination?.route != Routes.SUMMARY) {
@@ -38,10 +51,15 @@ fun TennisApp() {
                 }
             }
 
+            val startDestination = if (user != null) Routes.SETUP else Routes.LOGIN
+
             SwipeDismissableNavHost(
                 navController = nav,
-                startDestination = Routes.SETUP,
+                startDestination = startDestination,
             ) {
+                composable(Routes.LOGIN) {
+                    LoginScreen(viewModel = authVm)
+                }
                 composable(Routes.SETUP) {
                     SetupMatchScreen(
                         onStart = { config ->

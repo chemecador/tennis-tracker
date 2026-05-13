@@ -12,7 +12,7 @@
 
 - `:shared`: pure Kotlin scoring engine. Put all tennis/padel rule changes here.
 - `:wear`: main Wear OS app built with Compose.
-- `:mobile`: placeholder. Do not work on it unless explicitly requested.
+- `:mobile`: companion phone app (Compose). Hosts the email/password + register login UI; the watch only offers anonymous guest sign-in.
 
 ## Project Rules
 
@@ -21,3 +21,4 @@
 - `MatchSessionViewModel` is the single source of truth for Wear match state.
 - Summary navigation happens when there is a winner; scoring logic must not know about navigation.
 - With AGP 9, do not apply `alias(libs.plugins.kotlin.android)` in `:wear` or `:mobile`.
+- Firebase Auth is wired in both modules; `google-services.json` must be present at `mobile/` and `wear/` for builds to succeed. Each device authenticates independently — cross-device session sharing (via the Wearable Data Layer) is not implemented yet.
