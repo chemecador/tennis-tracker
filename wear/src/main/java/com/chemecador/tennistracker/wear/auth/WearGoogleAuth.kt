@@ -7,6 +7,7 @@ import androidx.wear.phone.interactions.authentication.CodeVerifier
 import androidx.wear.phone.interactions.authentication.OAuthRequest
 import androidx.wear.phone.interactions.authentication.OAuthResponse
 import androidx.wear.phone.interactions.authentication.RemoteAuthClient
+import com.chemecador.tennistracker.wear.BuildConfig
 import com.chemecador.tennistracker.wear.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -96,8 +97,13 @@ class WearGoogleAuth(private val context: Context) {
         codeVerifier: String,
         redirectUri: String,
     ): String = withContext(Dispatchers.IO) {
+        val clientSecret = BuildConfig.GOOGLE_OAUTH_CLIENT_SECRET
+        if (clientSecret.isBlank()) {
+            error("Missing GOOGLE_OAUTH_CLIENT_SECRET in local.properties")
+        }
         val body = buildString {
             append("client_id=").append(Uri.encode(webClientId))
+            append("&client_secret=").append(Uri.encode(clientSecret))
             append("&code=").append(Uri.encode(code))
             append("&code_verifier=").append(Uri.encode(codeVerifier))
             append("&grant_type=authorization_code")

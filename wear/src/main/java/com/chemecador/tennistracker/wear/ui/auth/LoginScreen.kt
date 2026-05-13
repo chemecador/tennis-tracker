@@ -26,6 +26,7 @@ import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import com.chemecador.tennistracker.wear.auth.GoogleCredentialClient
 import com.chemecador.tennistracker.wear.auth.WearGoogleAuth
 
 @Composable
@@ -37,6 +38,7 @@ fun LoginScreen(
     val listState = rememberScalingLazyListState()
     val context = LocalContext.current
     val googleAuth = remember(context) { WearGoogleAuth(context) }
+    val localGoogle = remember(context) { GoogleCredentialClient(context) }
 
     ScreenScaffold(scrollState = listState) { contentPadding ->
         ScalingLazyColumn(
@@ -66,7 +68,7 @@ fun LoginScreen(
             item {
                 Button(
                     onClick = {
-                        viewModel.signInWithGoogle { googleAuth.signIn() }
+                        viewModel.signInWithGoogle { localGoogle.requestIdToken() }
                     },
                     enabled = !isWorking,
                     modifier = Modifier.fillMaxWidth(),
@@ -74,8 +76,19 @@ fun LoginScreen(
                     if (isWorking) {
                         CircularProgressIndicator()
                     } else {
-                        Text("Iniciar con Google")
+                        Text("Google (cuenta del reloj)")
                     }
+                }
+            }
+            item {
+                Button(
+                    onClick = {
+                        viewModel.signInWithGoogle { googleAuth.signIn() }
+                    },
+                    enabled = !isWorking,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Google (desde el móvil)")
                 }
             }
             item {
