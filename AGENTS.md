@@ -12,7 +12,7 @@
 
 - `:shared`: pure Kotlin scoring engine. Put all tennis/padel rule changes here.
 - `:wear`: main Wear OS app built with Compose.
-- `:mobile`: companion phone app (Compose). Hosts the email/password + register login UI; the watch only offers anonymous guest sign-in.
+- `:mobile`: phone app (Compose Material3). Full match flow (setup, scoreboard, summary) plus the email/password + register login UI; the watch only offers anonymous guest sign-in.
 
 ## Project Rules
 

@@ -5,13 +5,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chemecador.tennistracker.ui.auth.AuthViewModel
 import com.chemecador.tennistracker.ui.auth.LoginScreen
-import com.chemecador.tennistracker.ui.home.HomeScreen
+import com.chemecador.tennistracker.ui.match.MatchSessionViewModel
+import com.chemecador.tennistracker.ui.match.ScoreboardScreen
+import com.chemecador.tennistracker.ui.setup.SetupMatchScreen
+import com.chemecador.tennistracker.ui.summary.MatchSummaryScreen
 import com.chemecador.tennistracker.ui.theme.TennisTrackerTheme
+import com.google.firebase.auth.FirebaseUser
+
+private enum class Step { SETUP, MATCH, SUMMARY }
 
 @Composable
 fun TennisTrackerApp() {
@@ -27,11 +36,57 @@ fun TennisTrackerApp() {
             if (current == null) {
                 LoginScreen(viewModel = authVm)
             } else {
-                HomeScreen(
+                MatchFlow(
                     user = current,
                     onSignOut = { authVm.signOut() },
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun MatchFlow(user: FirebaseUser, onSignOut: () -> Unit) {
+    val sessionVm: MatchSessionViewModel = viewModel()
+    val state by sessionVm.state.collectAsStateWithLifecycle()
+    var step by remember { mutableStateOf(Step.SETUP) }
+
+    val winner = state?.winner
+    if (winner != null && step == Step.MATCH) {
+        step = Step.SUMMARY
+    }
+
+    val accountLabel = if (user.isAnonymous) {
+        "Modo invitado"
+    } else {
+        user.email ?: user.uid
+    }
+
+    when (step) {
+        Step.SETUP -> SetupMatchScreen(
+            accountLabel = accountLabel,
+            onStart = { config ->
+                sessionVm.start(config)
+                step = Step.MATCH
+            },
+            onSignOut = {
+                sessionVm.reset()
+                onSignOut()
+            },
+        )
+        Step.MATCH -> ScoreboardScreen(
+            viewModel = sessionVm,
+            onExit = {
+                sessionVm.reset()
+                step = Step.SETUP
+            },
+        )
+        Step.SUMMARY -> MatchSummaryScreen(
+            state = state,
+            onNewMatch = {
+                sessionVm.reset()
+                step = Step.SETUP
+            },
+        )
     }
 }
