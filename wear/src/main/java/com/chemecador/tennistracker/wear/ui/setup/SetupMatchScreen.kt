@@ -31,6 +31,7 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
     var bestOfSets by remember { mutableStateOf(3) }
     var finalSetMode by remember { mutableStateOf(FinalSetMode.TIEBREAK_7) }
     var goldenPoint by remember { mutableStateOf(false) }
+    var advancedOptions by remember { mutableStateOf(false) }
 
     val listState = rememberScalingLazyListState()
 
@@ -51,34 +52,45 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
                 )
             }
 
-            item { SectionLabel("Sets a jugar") }
-            items(listOf(1, 3, 5)) { n ->
-                SwitchButton(
-                    checked = bestOfSets == n,
-                    onCheckedChange = { if (it) bestOfSets = n },
-                    label = { Text("Al mejor de $n") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            item { SectionLabel("Set decisivo") }
-            items(FinalSetMode.entries) { mode ->
-                SwitchButton(
-                    checked = finalSetMode == mode,
-                    onCheckedChange = { if (it) finalSetMode = mode },
-                    label = { Text(mode.displayName()) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-
-            item { SectionLabel("Punto de oro") }
             item {
                 SwitchButton(
-                    checked = goldenPoint,
-                    onCheckedChange = { goldenPoint = it },
-                    label = { Text(if (goldenPoint) "Activado" else "Desactivado") },
+                    checked = advancedOptions,
+                    onCheckedChange = { advancedOptions = it },
+                    label = { Text("Opciones avanzadas") },
                     modifier = Modifier.fillMaxWidth(),
                 )
+            }
+
+            if (advancedOptions) {
+                item { SectionLabel("Sets a jugar") }
+                items(listOf(1, 3, 5)) { n ->
+                    SwitchButton(
+                        checked = bestOfSets == n,
+                        onCheckedChange = { if (it) bestOfSets = n },
+                        label = { Text("Al mejor de $n") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                item { SectionLabel("Set decisivo") }
+                items(FinalSetMode.entries) { mode ->
+                    SwitchButton(
+                        checked = finalSetMode == mode,
+                        onCheckedChange = { if (it) finalSetMode = mode },
+                        label = { Text(mode.displayName()) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                item { SectionLabel("Punto de oro") }
+                item {
+                    SwitchButton(
+                        checked = goldenPoint,
+                        onCheckedChange = { goldenPoint = it },
+                        label = { Text(if (goldenPoint) "Activado" else "Desactivado") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             item { Spacer(Modifier.height(4.dp)) }

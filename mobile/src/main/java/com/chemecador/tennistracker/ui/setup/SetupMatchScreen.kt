@@ -42,6 +42,7 @@ fun SetupMatchScreen(
     var bestOfSets by remember { mutableStateOf(3) }
     var finalSetMode by remember { mutableStateOf(FinalSetMode.TIEBREAK_7) }
     var goldenPoint by remember { mutableStateOf(false) }
+    var advancedOptions by remember { mutableStateOf(false) }
     var playerA by remember { mutableStateOf("A") }
     var playerB by remember { mutableStateOf("B") }
 
@@ -65,11 +66,13 @@ fun SetupMatchScreen(
             bestOfSets = bestOfSets,
             finalSetMode = finalSetMode,
             goldenPoint = goldenPoint,
+            advancedOptions = advancedOptions,
             onPlayerAChange = { playerA = it },
             onPlayerBChange = { playerB = it },
             onBestOfChange = { bestOfSets = it },
             onFinalSetModeChange = { finalSetMode = it },
             onGoldenPointChange = { goldenPoint = it },
+            onAdvancedOptionsChange = { advancedOptions = it },
             onStart = {
                 onStart(
                     MatchConfig(
@@ -94,11 +97,13 @@ private fun SetupContent(
     bestOfSets: Int,
     finalSetMode: FinalSetMode,
     goldenPoint: Boolean,
+    advancedOptions: Boolean,
     onPlayerAChange: (String) -> Unit,
     onPlayerBChange: (String) -> Unit,
     onBestOfChange: (Int) -> Unit,
     onFinalSetModeChange: (FinalSetMode) -> Unit,
     onGoldenPointChange: (Boolean) -> Unit,
+    onAdvancedOptionsChange: (Boolean) -> Unit,
     onStart: () -> Unit,
 ) {
     val scroll = rememberScrollState()
@@ -132,34 +137,49 @@ private fun SetupContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        SectionLabel("Sets a jugar")
-        ChipRow(
-            options = listOf(1, 3, 5),
-            selected = bestOfSets,
-            label = { "Al mejor de $it" },
-            onSelect = onBestOfChange,
-        )
-
-        SectionLabel("Set decisivo")
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FinalSetMode.entries.forEach { mode ->
-                FilterChip(
-                    selected = finalSetMode == mode,
-                    onClick = { onFinalSetModeChange(mode) },
-                    label = { Text(mode.displayName()) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-
-        SectionLabel("Punto de oro")
         androidx.compose.foundation.layout.Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(if (goldenPoint) "Activado" else "Desactivado")
-            Switch(checked = goldenPoint, onCheckedChange = onGoldenPointChange)
+            Text(
+                text = "Opciones avanzadas",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Switch(checked = advancedOptions, onCheckedChange = onAdvancedOptionsChange)
+        }
+
+        if (advancedOptions) {
+            SectionLabel("Sets a jugar")
+            ChipRow(
+                options = listOf(1, 3, 5),
+                selected = bestOfSets,
+                label = { "Al mejor de $it" },
+                onSelect = onBestOfChange,
+            )
+
+            SectionLabel("Set decisivo")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FinalSetMode.entries.forEach { mode ->
+                    FilterChip(
+                        selected = finalSetMode == mode,
+                        onClick = { onFinalSetModeChange(mode) },
+                        label = { Text(mode.displayName()) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            SectionLabel("Punto de oro")
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(if (goldenPoint) "Activado" else "Desactivado")
+                Switch(checked = goldenPoint, onCheckedChange = onGoldenPointChange)
+            }
         }
 
         Spacer(Modifier.height(8.dp))
