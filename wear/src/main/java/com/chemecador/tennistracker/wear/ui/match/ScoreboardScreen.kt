@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +22,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.wear.compose.material3.AlertDialog
+import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
 import com.chemecador.tennistracker.scoring.GamePhase
@@ -32,6 +37,8 @@ fun ScoreboardScreen(viewModel: MatchSessionViewModel) {
 
     KeepScreenOn()
 
+    var showEndDialog by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         SideZone(
             side = Side.A,
@@ -43,7 +50,11 @@ fun ScoreboardScreen(viewModel: MatchSessionViewModel) {
                 .fillMaxWidth()
                 .weight(1f),
         )
-        CenterStrip(state = current, onUndo = viewModel::onUndo)
+        CenterStrip(
+            state = current,
+            onUndo = viewModel::onUndo,
+            onEndMatch = { showEndDialog = true },
+        )
         SideZone(
             side = Side.B,
             state = current,
@@ -55,6 +66,29 @@ fun ScoreboardScreen(viewModel: MatchSessionViewModel) {
                 .weight(1f),
         )
     }
+
+    AlertDialog(
+        visible = showEndDialog && current.winner == null,
+        onDismissRequest = { showEndDialog = false },
+        title = { Text("¿Terminar partido?", textAlign = TextAlign.Center) },
+        text = { Text("Elige el ganador", textAlign = TextAlign.Center) },
+        confirmButton = {
+            Button(
+                onClick = {
+                    viewModel.endMatchEarly(Side.A)
+                    showEndDialog = false
+                },
+            ) { Text(current.config.playerNameA) }
+        },
+        dismissButton = {
+            Button(
+                onClick = {
+                    viewModel.endMatchEarly(Side.B)
+                    showEndDialog = false
+                },
+            ) { Text(current.config.playerNameB) }
+        },
+    )
 }
 
 @Composable
@@ -97,10 +131,20 @@ private fun SideZone(
 }
 
 @Composable
-private fun CenterStrip(state: MatchState, onUndo: () -> Unit) {
+private fun CenterStrip(
+    state: MatchState,
+    onUndo: () -> Unit,
+    onEndMatch: () -> Unit,
+) {
     val canUndo = state.history.isNotEmpty()
     val undoColor = if (canUndo) {
         MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    }
+    val canEnd = state.winner == null
+    val endColor = if (canEnd) {
+        MaterialTheme.colorScheme.error
     } else {
         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     }
@@ -109,7 +153,6 @@ private fun CenterStrip(state: MatchState, onUndo: () -> Unit) {
             .fillMaxWidth()
             .height(32.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .clickable(enabled = canUndo) { onUndo() }
             .padding(horizontal = 16.dp),
     ) {
         Text(
@@ -117,7 +160,9 @@ private fun CenterStrip(state: MatchState, onUndo: () -> Unit) {
             color = undoColor,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterStart),
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .clickable(enabled = canUndo) { onUndo() },
         )
         Text(
             text = setsLine(state),
@@ -125,6 +170,15 @@ private fun CenterStrip(state: MatchState, onUndo: () -> Unit) {
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.align(Alignment.Center),
+        )
+        Text(
+            text = "⏹",
+            color = endColor,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .clickable(enabled = canEnd) { onEndMatch() },
         )
     }
 }

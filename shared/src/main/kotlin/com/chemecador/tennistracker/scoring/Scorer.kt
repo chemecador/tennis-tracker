@@ -23,6 +23,15 @@ object Scorer {
     fun undo(state: MatchState): MatchState =
         state.history.lastOrNull()?.copy(history = state.history.dropLast(1)) ?: state
 
+    fun endMatchEarly(state: MatchState, winner: Side): MatchState {
+        if (state.winner != null) return state
+        val snapshot = state.copy(history = emptyList())
+        return state.copy(
+            winner = winner,
+            history = state.history + snapshot,
+        )
+    }
+
     private fun applyPoint(state: MatchState, w: Side): MatchState =
         when (val phase = state.phase) {
             is GamePhase.Normal -> applyNormalPoint(state, phase, w)

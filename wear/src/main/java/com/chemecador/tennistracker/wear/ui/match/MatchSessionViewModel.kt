@@ -26,6 +26,10 @@ class MatchSessionViewModel : ViewModel() {
         _state.update { current -> current?.let(Scorer::undo) }
     }
 
+    fun endMatchEarly(winner: Side) {
+        _state.update { current -> current?.let { Scorer.endMatchEarly(it, winner) } }
+    }
+
     fun reset() {
         _state.value = null
     }

@@ -1,9 +1,12 @@
 package com.chemecador.tennistracker.wear.ui.summary
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +22,7 @@ import androidx.wear.compose.material3.Text
 import com.chemecador.tennistracker.scoring.MatchState
 import com.chemecador.tennistracker.scoring.SetScore
 import com.chemecador.tennistracker.scoring.Side
+import com.chemecador.tennistracker.scoring.TieBreakScore
 
 @Composable
 fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
@@ -62,19 +66,47 @@ fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
 
             item {
                 Text(
-                    text = "Sets",
+                    text = "Resultado",
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
                 )
             }
+            val (gamesA, gamesB) = matchScore(state)
+            item {
+                ScoreRow(
+                    name = state.config.playerNameA,
+                    sets = gamesA,
+                    isWinner = state.winner == Side.A,
+                )
+            }
+            item {
+                ScoreRow(
+                    name = state.config.playerNameB,
+                    sets = gamesB,
+                    isWinner = state.winner == Side.B,
+                )
+            }
 
-            state.completedSets.forEachIndexed { idx, set ->
+            if (state.completedSets.any { it.tieBreak != null }) {
+                item { Spacer(Modifier.height(2.dp)) }
                 item {
                     Text(
-                        text = "${idx + 1}.  ${formatSet(set)}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = "Tie-breaks",
+                        style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                     )
+                }
+                state.completedSets.forEachIndexed { idx, set ->
+                    val tb = set.tieBreak
+                    if (tb != null) {
+                        item {
+                            Text(
+                                text = "S${idx + 1}: ${formatTieBreak(set, tb)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -92,11 +124,41 @@ fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
     }
 }
 
-private fun formatSet(set: SetScore): String {
-    val tb = set.tieBreak
-    return when {
-        tb != null && set.gamesA + set.gamesB <= 1 -> "${tb.a}-${tb.b}  (super TB)"
-        tb != null -> "${set.gamesA}-${set.gamesB}  (${tb.a}-${tb.b})"
-        else -> "${set.gamesA}-${set.gamesB}"
+@Composable
+private fun ScoreRow(name: String, sets: List<Int>, isWinner: Boolean) {
+    val weight = if (isWinner) FontWeight.Bold else FontWeight.Normal
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(horizontal = 8.dp),
+    ) {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = weight,
+            modifier = Modifier.width(72.dp),
+        )
+        sets.forEach { games ->
+            Text(
+                text = games.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = weight,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(22.dp),
+            )
+        }
     }
+}
+
+private fun formatTieBreak(set: SetScore, tb: TieBreakScore): String =
+    if (set.gamesA + set.gamesB <= 1) "${tb.a}-${tb.b} (super TB)" else "${tb.a}-${tb.b}"
+
+private fun matchScore(state: MatchState): Pair<List<Int>, List<Int>> {
+    val gamesA = state.completedSets.map { it.gamesA }.toMutableList()
+    val gamesB = state.completedSets.map { it.gamesB }.toMutableList()
+    val (curA, curB) = state.currentSetGames
+    if (curA > 0 || curB > 0 || gamesA.isEmpty()) {
+        gamesA += curA
+        gamesB += curB
+    }
+    return gamesA to gamesB
 }

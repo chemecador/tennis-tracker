@@ -103,4 +103,32 @@ class ScorerSetMatchEndTest {
         assertEquals(2, tennisBo3().setsToWin)
         assertEquals(3, tennisBo5().setsToWin)
     }
+
+    @Test fun `endMatchEarly sets winner and preserves completed sets`() {
+        var s = Scorer.newMatch(tennisBo3())
+        // A wins set 1: 6-0
+        repeat(6) { s = s.play("AAAA") }
+        assertEquals(1, s.completedSets.size)
+        // Mid second set: 3-2 for A
+        s = s.play("AAAABBBBAAAABBBBAAAA")
+        assertEquals(3 to 2, s.currentSetGames)
+        assertNull(s.winner)
+
+        val ended = Scorer.endMatchEarly(s, Side.B)
+
+        assertEquals(Side.B, ended.winner)
+        assertEquals(1, ended.completedSets.size)
+        assertEquals(3 to 2, ended.currentSetGames)
+    }
+
+    @Test fun `endMatchEarly is a no-op when match already has a winner`() {
+        var s = Scorer.newMatch(tennisBo1())
+        repeat(6) { s = s.play("AAAA") }
+        assertEquals(Side.A, s.winner)
+
+        val unchanged = Scorer.endMatchEarly(s, Side.B)
+
+        assertEquals(Side.A, unchanged.winner)
+        assertEquals(s, unchanged)
+    }
 }
