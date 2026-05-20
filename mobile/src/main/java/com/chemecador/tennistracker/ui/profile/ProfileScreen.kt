@@ -17,7 +17,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,6 +46,7 @@ fun ProfileScreen(
     profile: UserProfile?,
     onBack: () -> Unit,
     onSignOut: () -> Unit,
+    onOpenFriends: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -65,6 +68,7 @@ fun ProfileScreen(
                 profile = profile,
                 contentPadding = padding,
                 onSignOut = onSignOut,
+                onOpenFriends = onOpenFriends,
             )
         } else {
             GuestContent(
@@ -80,6 +84,7 @@ private fun ProfileContent(
     profile: UserProfile,
     contentPadding: PaddingValues,
     onSignOut: () -> Unit,
+    onOpenFriends: () -> Unit,
 ) {
     val scroll = rememberScrollState()
     Column(
@@ -122,9 +127,46 @@ private fun ProfileContent(
 
         StatRow(label = "Partidos jugados", value = profile.matchesPlayed.toString())
 
+        FriendsEntry(onClick = onOpenFriends)
+
         Spacer(Modifier.height(8.dp))
 
         SignOutButton(onSignOut = onSignOut)
+    }
+}
+
+@Composable
+private fun FriendsEntry(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        onClick = onClick,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.People,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.size(12.dp))
+            Text(
+                text = "Amigos",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

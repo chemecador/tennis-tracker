@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chemecador.tennistracker.data.profile.UserProfile
 import com.chemecador.tennistracker.ui.auth.AuthViewModel
 import com.chemecador.tennistracker.ui.auth.LoginScreen
+import com.chemecador.tennistracker.ui.friends.FriendsScreen
 import com.chemecador.tennistracker.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.ui.match.ScoreboardScreen
 import com.chemecador.tennistracker.ui.profile.ChooseUsernameScreen
@@ -43,6 +44,7 @@ fun TennisTrackerApp() {
             when {
                 current == null -> LoginScreen(viewModel = authVm)
                 current.isAnonymous -> AppShell(
+                    uid = current.uid,
                     profile = null,
                     onSignOut = { authVm.signOut() },
                 )
@@ -67,22 +69,29 @@ private fun ProfileGate(user: FirebaseUser, onSignOut: () -> Unit) {
     when {
         isLoading -> LoadingScreen()
         profile == null -> ChooseUsernameScreen(uid = user.uid, onSignOut = onSignOut)
-        else -> AppShell(profile = profile, onSignOut = onSignOut)
+        else -> AppShell(uid = user.uid, profile = profile, onSignOut = onSignOut)
     }
 }
 
 @Composable
-private fun AppShell(profile: UserProfile?, onSignOut: () -> Unit) {
+private fun AppShell(uid: String, profile: UserProfile?, onSignOut: () -> Unit) {
     var showingProfile by remember { mutableStateOf(false) }
+    var showingFriends by remember { mutableStateOf(false) }
 
-    if (showingProfile) {
-        ProfileScreen(
+    when {
+        showingFriends && profile != null -> FriendsScreen(
+            myUid = uid,
+            onBack = { showingFriends = false },
+        )
+
+        showingProfile -> ProfileScreen(
             profile = profile,
             onBack = { showingProfile = false },
             onSignOut = onSignOut,
+            onOpenFriends = { showingFriends = true },
         )
-    } else {
-        MatchFlow(
+
+        else -> MatchFlow(
             accountLabel = profile?.username ?: "Modo invitado",
             onOpenProfile = { showingProfile = true },
         )

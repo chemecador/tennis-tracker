@@ -37,6 +37,20 @@ class UserProfileRepository(
         return !snapshot.exists()
     }
 
+    suspend fun findUserByUsername(username: String): UserProfile? {
+        val normalized = username.normalizeUsername()
+        if (!normalized.isValidUsername()) return null
+        val usernameDoc = firestore.collection(USERNAMES).document(normalized).get().await()
+        val uid = usernameDoc.getString("uid") ?: return null
+        val userDoc = firestore.collection(USERS).document(uid).get().await()
+        return userDoc.toUserProfile(uid)
+    }
+
+    suspend fun getProfileOnce(uid: String): UserProfile? {
+        val doc = firestore.collection(USERS).document(uid).get().await()
+        return doc.toUserProfile(uid)
+    }
+
     suspend fun claimUsernameAndCreateProfile(
         uid: String,
         username: String,

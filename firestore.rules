@@ -53,5 +53,45 @@ service cloud.firestore {
 
       allow delete: if isOwner(uid);
     }
+
+    match /friendships/{friendshipId} {
+      function idMatchesParticipants(parts) {
+        return friendshipId.split('_').size() == 2
+          && friendshipId.split('_')[0] in parts
+          && friendshipId.split('_')[1] in parts
+          && friendshipId.split('_')[0] < friendshipId.split('_')[1];
+      }
+
+      allow get: if isSignedIn()
+        && (resource == null || request.auth.uid in resource.data.participants);
+
+      allow list: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(
+             ['participants', 'status', 'requestedBy', 'createdAt']
+           )
+        && request.resource.data.participants.size() == 2
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && idMatchesParticipants(request.resource.data.participants);
+
+      allow update: if isSignedIn()
+        && request.auth.uid in resource.data.participants
+        && request.auth.uid != resource.data.requestedBy
+        && resource.data.status == 'pending'
+        && request.resource.data.status == 'accepted'
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.requestedBy == resource.data.requestedBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.keys().hasOnly(
+             ['participants', 'status', 'requestedBy', 'createdAt', 'acceptedAt']
+           );
+
+      allow delete: if isSignedIn()
+        && request.auth.uid in resource.data.participants;
+    }
   }
 }
