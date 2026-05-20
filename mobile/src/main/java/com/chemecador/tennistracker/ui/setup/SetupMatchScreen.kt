@@ -10,15 +10,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,7 +40,7 @@ import com.chemecador.tennistracker.scoring.MatchConfig
 fun SetupMatchScreen(
     accountLabel: String,
     onStart: (MatchConfig) -> Unit,
-    onSignOut: () -> Unit,
+    onOpenProfile: () -> Unit,
 ) {
     var bestOfSets by remember { mutableStateOf(3) }
     var finalSetMode by remember { mutableStateOf(FinalSetMode.TIEBREAK_7) }
@@ -51,8 +54,11 @@ fun SetupMatchScreen(
             TopAppBar(
                 title = { Text("Nuevo partido") },
                 actions = {
-                    TextButton(onClick = onSignOut) {
-                        Text("Salir")
+                    IconButton(onClick = onOpenProfile) {
+                        Icon(
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = "Perfil",
+                        )
                     }
                 },
             )

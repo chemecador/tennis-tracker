@@ -14,11 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chemecador.tennistracker.data.profile.UserProfile
 import com.chemecador.tennistracker.ui.auth.AuthViewModel
 import com.chemecador.tennistracker.ui.auth.LoginScreen
 import com.chemecador.tennistracker.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.ui.match.ScoreboardScreen
 import com.chemecador.tennistracker.ui.profile.ChooseUsernameScreen
+import com.chemecador.tennistracker.ui.profile.ProfileScreen
 import com.chemecador.tennistracker.ui.profile.UserProfileViewModel
 import com.chemecador.tennistracker.ui.setup.SetupMatchScreen
 import com.chemecador.tennistracker.ui.summary.MatchSummaryScreen
@@ -40,8 +42,8 @@ fun TennisTrackerApp() {
 
             when {
                 current == null -> LoginScreen(viewModel = authVm)
-                current.isAnonymous -> MatchFlow(
-                    accountLabel = "Modo invitado",
+                current.isAnonymous -> AppShell(
+                    profile = null,
                     onSignOut = { authVm.signOut() },
                 )
 
@@ -65,9 +67,24 @@ private fun ProfileGate(user: FirebaseUser, onSignOut: () -> Unit) {
     when {
         isLoading -> LoadingScreen()
         profile == null -> ChooseUsernameScreen(uid = user.uid, onSignOut = onSignOut)
-        else -> MatchFlow(
-            accountLabel = profile?.username ?: user.uid,
+        else -> AppShell(profile = profile, onSignOut = onSignOut)
+    }
+}
+
+@Composable
+private fun AppShell(profile: UserProfile?, onSignOut: () -> Unit) {
+    var showingProfile by remember { mutableStateOf(false) }
+
+    if (showingProfile) {
+        ProfileScreen(
+            profile = profile,
+            onBack = { showingProfile = false },
             onSignOut = onSignOut,
+        )
+    } else {
+        MatchFlow(
+            accountLabel = profile?.username ?: "Modo invitado",
+            onOpenProfile = { showingProfile = true },
         )
     }
 }
@@ -80,7 +97,7 @@ private fun LoadingScreen() {
 }
 
 @Composable
-private fun MatchFlow(accountLabel: String, onSignOut: () -> Unit) {
+private fun MatchFlow(accountLabel: String, onOpenProfile: () -> Unit) {
     val sessionVm: MatchSessionViewModel = viewModel()
     val state by sessionVm.state.collectAsStateWithLifecycle()
     var step by remember { mutableStateOf(Step.SETUP) }
@@ -97,10 +114,7 @@ private fun MatchFlow(accountLabel: String, onSignOut: () -> Unit) {
                 sessionVm.start(config)
                 step = Step.MATCH
             },
-            onSignOut = {
-                sessionVm.reset()
-                onSignOut()
-            },
+            onOpenProfile = onOpenProfile,
         )
 
         Step.MATCH -> ScoreboardScreen(
