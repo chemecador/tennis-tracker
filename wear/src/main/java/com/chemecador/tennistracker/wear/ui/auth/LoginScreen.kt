@@ -8,17 +8,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.chemecador.tennistracker.wear.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Button
@@ -26,19 +22,22 @@ import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import com.chemecador.tennistracker.core.auth.AuthViewModel
+import com.chemecador.tennistracker.wear.R
 import com.chemecador.tennistracker.wear.auth.GoogleCredentialClient
 import com.chemecador.tennistracker.wear.auth.WearGoogleAuth
+import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun LoginScreen(
-    viewModel: AuthViewModel = viewModel(),
+    viewModel: AuthViewModel = koinViewModel(),
 ) {
     val isWorking by viewModel.isWorking.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
-    val context = LocalContext.current
-    val googleAuth = remember(context) { WearGoogleAuth(context) }
-    val localGoogle = remember(context) { GoogleCredentialClient(context) }
+    val googleAuth: WearGoogleAuth = koinInject()
+    val localGoogle: GoogleCredentialClient = koinInject()
 
     ScreenScaffold(scrollState = listState) { contentPadding ->
         ScalingLazyColumn(

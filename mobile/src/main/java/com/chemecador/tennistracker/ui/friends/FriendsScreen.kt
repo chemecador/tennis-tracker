@@ -43,7 +43,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +52,8 @@ fun FriendsScreen(
     myUid: String,
     onBack: () -> Unit,
 ) {
-    val viewModel: FriendsViewModel = viewModel(key = "friends-$myUid") {
-        FriendsViewModel(myUid = myUid)
+    val viewModel: FriendsViewModel = koinViewModel(key = "friends-$myUid") {
+        parametersOf(myUid)
     }
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
     val addResult by viewModel.addResult.collectAsStateWithLifecycle()

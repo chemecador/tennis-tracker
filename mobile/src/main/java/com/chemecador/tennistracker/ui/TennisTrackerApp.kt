@@ -13,12 +13,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chemecador.tennistracker.core.auth.AuthViewModel
+import com.chemecador.tennistracker.core.match.MatchSessionViewModel
 import com.chemecador.tennistracker.data.profile.UserProfile
-import com.chemecador.tennistracker.ui.auth.AuthViewModel
 import com.chemecador.tennistracker.ui.auth.LoginScreen
 import com.chemecador.tennistracker.ui.friends.FriendsScreen
-import com.chemecador.tennistracker.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.ui.match.ScoreboardScreen
 import com.chemecador.tennistracker.ui.profile.ChooseUsernameScreen
 import com.chemecador.tennistracker.ui.profile.ProfileScreen
@@ -27,6 +26,7 @@ import com.chemecador.tennistracker.ui.setup.SetupMatchScreen
 import com.chemecador.tennistracker.ui.summary.MatchSummaryScreen
 import com.chemecador.tennistracker.ui.theme.TennisTrackerTheme
 import com.google.firebase.auth.FirebaseUser
+import org.koin.androidx.compose.koinViewModel
 
 private enum class Step { SETUP, MATCH, SUMMARY }
 
@@ -37,7 +37,7 @@ fun TennisTrackerApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            val authVm: AuthViewModel = viewModel()
+            val authVm: AuthViewModel = koinViewModel()
             val user by authVm.user.collectAsStateWithLifecycle()
             val current = user
 
@@ -60,8 +60,8 @@ fun TennisTrackerApp() {
 
 @Composable
 private fun ProfileGate(user: FirebaseUser, onSignOut: () -> Unit) {
-    val profileVm: UserProfileViewModel = viewModel(key = "profile-${user.uid}") {
-        UserProfileViewModel(uid = user.uid)
+    val profileVm: UserProfileViewModel = koinViewModel(key = "profile-${user.uid}") {
+        org.koin.core.parameter.parametersOf(user.uid)
     }
     val profile by profileVm.profile.collectAsStateWithLifecycle()
     val isLoading by profileVm.isLoading.collectAsStateWithLifecycle()
@@ -108,7 +108,7 @@ private fun LoadingScreen() {
 
 @Composable
 private fun MatchFlow(uid: String, profile: UserProfile?, onOpenProfile: () -> Unit) {
-    val sessionVm: MatchSessionViewModel = viewModel()
+    val sessionVm: MatchSessionViewModel = koinViewModel()
     val state by sessionVm.state.collectAsStateWithLifecycle()
     var step by remember { mutableStateOf(Step.SETUP) }
 

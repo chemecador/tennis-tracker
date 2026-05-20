@@ -44,8 +44,8 @@ sealed interface AddFriendResult {
 
 class FriendsViewModel(
     private val myUid: String,
-    private val friendshipRepo: FriendshipRepository = FriendshipRepository(),
-    private val profileRepo: UserProfileRepository = UserProfileRepository(),
+    private val friendshipRepo: FriendshipRepository,
+    private val profileRepo: UserProfileRepository,
 ) : ViewModel() {
 
     private val profileCache = mutableMapOf<String, UserProfile?>()

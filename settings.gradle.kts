@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Tennis Tracker"
-include(":wear", ":mobile", ":shared")
+include(":wear", ":mobile", ":shared", ":core")

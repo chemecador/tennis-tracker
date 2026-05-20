@@ -1,8 +1,7 @@
-package com.chemecador.tennistracker.ui.auth
+package com.chemecador.tennistracker.core.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.chemecador.tennistracker.auth.AuthRepository
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,7 +11,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val repository: AuthRepository = AuthRepository(),
+    private val repository: AuthRepository,
 ) : ViewModel() {
 
     val user: StateFlow<FirebaseUser?> = repository.userFlow
@@ -38,11 +37,15 @@ class AuthViewModel(
 
     fun signInWithGoogle(idToken: String) = launchAuth { repository.signInWithGoogle(idToken) }
 
-    fun onAuthError(message: String) {
-        _error.value = message
+    fun signInWithGoogle(idTokenProvider: suspend () -> String) = launchAuth {
+        repository.signInWithGoogle(idTokenProvider())
     }
 
     fun signOut() = repository.signOut()
+
+    fun onAuthError(message: String) {
+        _error.value = message
+    }
 
     fun clearError() {
         _error.value = null
@@ -60,7 +63,7 @@ class AuthViewModel(
         return true
     }
 
-    private fun launchAuth(block: suspend () -> FirebaseUser) {
+    private fun launchAuth(block: suspend () -> Unit) {
         if (_isWorking.value) return
         viewModelScope.launch {
             _isWorking.value = true

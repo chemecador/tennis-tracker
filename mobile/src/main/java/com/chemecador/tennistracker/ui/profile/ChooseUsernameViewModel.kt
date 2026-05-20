@@ -25,7 +25,7 @@ sealed interface UsernameValidation {
 }
 
 class ChooseUsernameViewModel(
-    private val repository: UserProfileRepository = UserProfileRepository(),
+    private val repository: UserProfileRepository,
 ) : ViewModel() {
 
     private val _username = MutableStateFlow("")

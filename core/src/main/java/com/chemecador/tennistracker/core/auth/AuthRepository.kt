@@ -1,4 +1,4 @@
-package com.chemecador.tennistracker.auth
+package com.chemecador.tennistracker.core.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser

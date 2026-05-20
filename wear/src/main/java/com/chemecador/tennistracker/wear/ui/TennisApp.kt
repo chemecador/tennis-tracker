@@ -4,19 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import com.chemecador.tennistracker.wear.ui.auth.AuthViewModel
+import com.chemecador.tennistracker.core.auth.AuthViewModel
+import com.chemecador.tennistracker.core.match.MatchSessionViewModel
 import com.chemecador.tennistracker.wear.ui.auth.LoginScreen
-import com.chemecador.tennistracker.wear.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.wear.ui.match.ScoreboardScreen
 import com.chemecador.tennistracker.wear.ui.setup.SetupMatchScreen
 import com.chemecador.tennistracker.wear.ui.summary.MatchSummaryScreen
+import org.koin.androidx.compose.koinViewModel
 
 private object Routes {
     const val LOGIN = "login"
@@ -30,9 +30,9 @@ fun TennisApp() {
     MaterialTheme {
         AppScaffold {
             val nav = rememberSwipeDismissableNavController()
-            val authVm: AuthViewModel = viewModel()
+            val authVm: AuthViewModel = koinViewModel()
             val user by authVm.user.collectAsStateWithLifecycle()
-            val sessionVm: MatchSessionViewModel = viewModel()
+            val sessionVm: MatchSessionViewModel = koinViewModel()
             val state by sessionVm.state.collectAsStateWithLifecycle()
 
             LaunchedEffect(user) {

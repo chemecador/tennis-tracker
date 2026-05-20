@@ -11,6 +11,8 @@
 ## Structure
 
 - `:shared`: pure Kotlin scoring engine. Put all tennis/padel rule changes here.
+- `:core`: Android library shared by `:wear` and `:mobile`. Holds `AuthRepository`, `AuthViewModel`,
+  `MatchSessionViewModel`, Firebase Auth wiring, and the `coreModule` Koin definitions.
 - `:wear`: main Wear OS app built with Compose.
 - `:mobile`: phone app (Compose Material3). Full match flow (setup, scoreboard, summary) plus the email/password + register login UI; the watch only offers anonymous guest sign-in.
 
@@ -18,10 +20,17 @@
 
 - Keep match state immutable and test scoring behavior in `:shared`.
 - Reuse existing test helpers before creating new setup code.
-- `MatchSessionViewModel` is the single source of truth for Wear match state.
+- `MatchSessionViewModel` (in `:core`) is the single source of truth for an in-progress match on
+  both watch and phone.
 - Summary navigation happens when there is a winner; scoring logic must not know about navigation.
-- With AGP 9, do not apply `alias(libs.plugins.kotlin.android)` in `:wear` or `:mobile`.
-- Firebase Auth is wired in both modules; `google-services.json` must be present at `mobile/` and `wear/` for builds to succeed. Each device authenticates independently — cross-device session sharing (via the Wearable Data Layer) is not implemented yet.
+- With AGP 9, do not apply `alias(libs.plugins.kotlin.android)` in `:wear`, `:mobile`, or `:core`.
+- DI is Koin. Shared bindings live in `coreModule` (`:core/di/CoreModule.kt`); each app module adds
+  its own `appModule` for platform-only deps. ViewModels use `koinViewModel()` from Compose; runtime
+  params are passed via `parametersOf(...)`. Do not add `= Repo()` defaults to ViewModel
+  constructors.
+- Firebase Auth is wired in `:core`; `google-services.json` must be present at `mobile/` and `wear/`
+  for builds to succeed. Each device authenticates independently — cross-device session sharing (via
+  the Wearable Data Layer) is not implemented yet.
 
 ## Backend & Data Model
 

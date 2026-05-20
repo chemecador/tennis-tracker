@@ -53,10 +53,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chemecador.tennistracker.data.profile.UserProfile
 import com.chemecador.tennistracker.scoring.FinalSetMode
 import com.chemecador.tennistracker.scoring.MatchConfig
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 sealed interface OpponentSelection {
     data object None : OpponentSelection
@@ -418,8 +419,8 @@ private fun OpponentPickerSheet(
     onSelect: (OpponentSelection) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val viewModel: SetupMatchViewModel = viewModel(key = "setup-match-$myUid") {
-        SetupMatchViewModel(myUid = myUid)
+    val viewModel: SetupMatchViewModel = koinViewModel(key = "setup-match-$myUid") {
+        parametersOf(myUid)
     }
     val friends by viewModel.friends.collectAsStateWithLifecycle()
     val searchResult by viewModel.searchResult.collectAsStateWithLifecycle()

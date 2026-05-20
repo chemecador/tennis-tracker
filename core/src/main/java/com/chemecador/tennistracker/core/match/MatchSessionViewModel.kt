@@ -1,4 +1,4 @@
-package com.chemecador.tennistracker.wear.ui.match
+package com.chemecador.tennistracker.core.match
 
 import androidx.lifecycle.ViewModel
 import com.chemecador.tennistracker.scoring.MatchConfig

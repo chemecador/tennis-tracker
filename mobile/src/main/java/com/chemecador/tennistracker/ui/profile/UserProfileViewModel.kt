@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.onEach
 
 class UserProfileViewModel(
     uid: String,
-    repository: UserProfileRepository = UserProfileRepository(),
+    repository: UserProfileRepository,
 ) : ViewModel() {
 
     private val _profile = MutableStateFlow<UserProfile?>(null)

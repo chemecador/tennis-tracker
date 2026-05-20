@@ -27,8 +27,8 @@ sealed interface OpponentSearchResult {
 
 class SetupMatchViewModel(
     private val myUid: String,
-    private val profileRepo: UserProfileRepository = UserProfileRepository(),
-    friendshipRepo: FriendshipRepository = FriendshipRepository(),
+    private val profileRepo: UserProfileRepository,
+    friendshipRepo: FriendshipRepository,
 ) : ViewModel() {
 
     private val profileCache = mutableMapOf<String, UserProfile?>()

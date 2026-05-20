@@ -61,7 +61,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":shared"))
+    implementation(project(":core"))
 
     implementation(libs.androidx.core.ktx)
 
@@ -79,14 +79,13 @@ dependencies {
     implementation(libs.wear.compose.material3)
     implementation(libs.wear.compose.navigation)
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.wear.phone.interactions)
 
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    implementation(libs.koin.androidx.compose)
 
     testImplementation(libs.junit)
 }

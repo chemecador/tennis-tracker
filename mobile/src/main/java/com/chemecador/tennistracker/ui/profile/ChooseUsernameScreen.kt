@@ -33,13 +33,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ChooseUsernameScreen(
     uid: String,
     onSignOut: () -> Unit,
-    viewModel: ChooseUsernameViewModel = viewModel(),
+    viewModel: ChooseUsernameViewModel = koinViewModel(),
 ) {
     val username by viewModel.username.collectAsStateWithLifecycle()
     val validation by viewModel.validation.collectAsStateWithLifecycle()
