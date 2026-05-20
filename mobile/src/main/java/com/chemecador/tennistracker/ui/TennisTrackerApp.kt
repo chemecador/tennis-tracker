@@ -92,7 +92,8 @@ private fun AppShell(uid: String, profile: UserProfile?, onSignOut: () -> Unit) 
         )
 
         else -> MatchFlow(
-            accountLabel = profile?.username ?: "Modo invitado",
+            uid = uid,
+            profile = profile,
             onOpenProfile = { showingProfile = true },
         )
     }
@@ -106,7 +107,7 @@ private fun LoadingScreen() {
 }
 
 @Composable
-private fun MatchFlow(accountLabel: String, onOpenProfile: () -> Unit) {
+private fun MatchFlow(uid: String, profile: UserProfile?, onOpenProfile: () -> Unit) {
     val sessionVm: MatchSessionViewModel = viewModel()
     val state by sessionVm.state.collectAsStateWithLifecycle()
     var step by remember { mutableStateOf(Step.SETUP) }
@@ -118,7 +119,8 @@ private fun MatchFlow(accountLabel: String, onOpenProfile: () -> Unit) {
 
     when (step) {
         Step.SETUP -> SetupMatchScreen(
-            accountLabel = accountLabel,
+            myUid = uid,
+            myProfile = profile,
             onStart = { config ->
                 sessionVm.start(config)
                 step = Step.MATCH

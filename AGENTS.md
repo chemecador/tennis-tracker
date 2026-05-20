@@ -32,8 +32,10 @@ User profiles (`users/{uid}` + `usernames/{u}`) are implemented in `:mobile`. Ev
 - Firestore dependency wired in `:mobile`.
 - `users/{uid}` document created on first login through `ChooseUsernameScreen`, with seeded ELO (1200 tennis / 1200 padel) and zeroed stats. Every signed-in user can read every profile — no per-user visibility flag.
 - `usernames/{u}` lock document guarantees username uniqueness via a Firestore transaction; the doc id IS the lowercase username.
-- Security rules live at `firestore.rules` (deploy manually from the Firebase console — no `firebase-tools` in repo yet). Rules forbid clients from mutating `elo`, `username`, `stats`, `createdAt` after creation.
-- Anonymous users skip the profile step.
+- `friendships/{minUid_maxUid}` collection. Document id is the two uids sorted lexicographically and joined with `_`, so `A→B` and `B→A` collapse into the same document and duplicates are impossible. Fields: `participants: [uidA, uidB]`, `status: pending|accepted`, `requestedBy`, `createdAt`, `acceptedAt?`. Double opt-in: only the receiver can promote `pending` → `accepted`; either party can delete (reject / cancel / unfriend).
+- Friend search resolves a username via `usernames/{u}` (public read) and then fetches `users/{uid}`.
+- Security rules live at `firestore.rules` (deploy manually from the Firebase console — no `firebase-tools` in repo yet). Rules forbid clients from mutating `elo`, `username`, `stats`, `createdAt` after creation. For `friendships/`, rules validate the id format matches the sorted participants, the requester is the `requestedBy`, and only the receiver can accept.
+- Anonymous users skip the profile step and don't see the Friends entry.
 - `:wear` is untouched — still anonymous-only, no profile.
 
 ### Planned (not implemented)
@@ -51,11 +53,9 @@ User profiles (`users/{uid}` + `usernames/{u}`) are implemented in `:mobile`. Ev
 - Query matches per user with `array-contains` on `players`. Do not duplicate matches into per-user subcollections.
 - No photo uploads for now — user profiles are text-only.
 
-### Friends
+### Friends (notifications still pending)
 
-- Username (not email) is the lookup key for adding friends.
-- `friendships/{a_b}` where the document id is the two uids sorted alphabetically and joined with `_`. This prevents duplicate `a→b` / `b→a` entries.
-- FCM notifies a user when they are added as the opponent of a match awaiting confirmation.
+- FCM should notify a user when they receive a friend request and when they are added as the opponent of a match awaiting confirmation. Not implemented yet.
 
 ### Match confirmation & ELO integrity
 
