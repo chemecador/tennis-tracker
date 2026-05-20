@@ -1,6 +1,8 @@
 package com.chemecador.tennistracker.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -8,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -15,6 +18,8 @@ import com.chemecador.tennistracker.ui.auth.AuthViewModel
 import com.chemecador.tennistracker.ui.auth.LoginScreen
 import com.chemecador.tennistracker.ui.match.MatchSessionViewModel
 import com.chemecador.tennistracker.ui.match.ScoreboardScreen
+import com.chemecador.tennistracker.ui.profile.ChooseUsernameScreen
+import com.chemecador.tennistracker.ui.profile.UserProfileViewModel
 import com.chemecador.tennistracker.ui.setup.SetupMatchScreen
 import com.chemecador.tennistracker.ui.summary.MatchSummaryScreen
 import com.chemecador.tennistracker.ui.theme.TennisTrackerTheme
@@ -31,12 +36,16 @@ fun TennisTrackerApp() {
         ) {
             val authVm: AuthViewModel = viewModel()
             val user by authVm.user.collectAsStateWithLifecycle()
-
             val current = user
-            if (current == null) {
-                LoginScreen(viewModel = authVm)
-            } else {
-                MatchFlow(
+
+            when {
+                current == null -> LoginScreen(viewModel = authVm)
+                current.isAnonymous -> MatchFlow(
+                    accountLabel = "Modo invitado",
+                    onSignOut = { authVm.signOut() },
+                )
+
+                else -> ProfileGate(
                     user = current,
                     onSignOut = { authVm.signOut() },
                 )
@@ -46,7 +55,32 @@ fun TennisTrackerApp() {
 }
 
 @Composable
-private fun MatchFlow(user: FirebaseUser, onSignOut: () -> Unit) {
+private fun ProfileGate(user: FirebaseUser, onSignOut: () -> Unit) {
+    val profileVm: UserProfileViewModel = viewModel(key = "profile-${user.uid}") {
+        UserProfileViewModel(uid = user.uid)
+    }
+    val profile by profileVm.profile.collectAsStateWithLifecycle()
+    val isLoading by profileVm.isLoading.collectAsStateWithLifecycle()
+
+    when {
+        isLoading -> LoadingScreen()
+        profile == null -> ChooseUsernameScreen(uid = user.uid, onSignOut = onSignOut)
+        else -> MatchFlow(
+            accountLabel = profile?.username ?: user.uid,
+            onSignOut = onSignOut,
+        )
+    }
+}
+
+@Composable
+private fun LoadingScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun MatchFlow(accountLabel: String, onSignOut: () -> Unit) {
     val sessionVm: MatchSessionViewModel = viewModel()
     val state by sessionVm.state.collectAsStateWithLifecycle()
     var step by remember { mutableStateOf(Step.SETUP) }
@@ -54,12 +88,6 @@ private fun MatchFlow(user: FirebaseUser, onSignOut: () -> Unit) {
     val winner = state?.winner
     if (winner != null && step == Step.MATCH) {
         step = Step.SUMMARY
-    }
-
-    val accountLabel = if (user.isAnonymous) {
-        "Modo invitado"
-    } else {
-        user.email ?: user.uid
     }
 
     when (step) {
@@ -74,6 +102,7 @@ private fun MatchFlow(user: FirebaseUser, onSignOut: () -> Unit) {
                 onSignOut()
             },
         )
+
         Step.MATCH -> ScoreboardScreen(
             viewModel = sessionVm,
             onExit = {
@@ -81,6 +110,7 @@ private fun MatchFlow(user: FirebaseUser, onSignOut: () -> Unit) {
                 step = Step.SETUP
             },
         )
+
         Step.SUMMARY -> MatchSummaryScreen(
             state = state,
             onNewMatch = {

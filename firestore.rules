@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function usernamePattern(name) {
+      return name.matches('^[a-z0-9_.]{3,20}$');
+    }
+
+    match /usernames/{username} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && usernamePattern(username)
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+
+      allow update: if isOwner(resource.data.uid)
+        && request.resource.data.uid == resource.data.uid;
+
+      allow delete: if isOwner(resource.data.uid);
+    }
+
+    match /users/{uid} {
+      allow get: if isSignedIn();
+
+      allow list: if isSignedIn();
+
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(
+             ['displayName', 'username', 'elo', 'stats', 'createdAt']
+           )
+        && request.resource.data.username is string
+        && usernamePattern(request.resource.data.username)
+        && request.resource.data.displayName is string
+        && request.resource.data.elo.tennis == 1200
+        && request.resource.data.elo.padel == 1200
+        && request.resource.data.stats.matchesPlayed == 0;
+
+      allow update: if isOwner(uid)
+        && request.resource.data.username == resource.data.username
+        && request.resource.data.elo == resource.data.elo
+        && request.resource.data.stats == resource.data.stats
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isOwner(uid);
+    }
+  }
+}

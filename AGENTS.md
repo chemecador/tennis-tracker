@@ -23,9 +23,20 @@
 - With AGP 9, do not apply `alias(libs.plugins.kotlin.android)` in `:wear` or `:mobile`.
 - Firebase Auth is wired in both modules; `google-services.json` must be present at `mobile/` and `wear/` for builds to succeed. Each device authenticates independently — cross-device session sharing (via the Wearable Data Layer) is not implemented yet.
 
-## Backend & Data Model (planned, not implemented)
+## Backend & Data Model
 
-Direction we are committing to before writing the persistence layer. Treat this as the target; deviations need a reason.
+User profiles (`users/{uid}` + `usernames/{u}`) are implemented in `:mobile`. Everything else in this section is the agreed target; deviations need a reason.
+
+### Implemented
+
+- Firestore dependency wired in `:mobile`.
+- `users/{uid}` document created on first login through `ChooseUsernameScreen`, with seeded ELO (1200 tennis / 1200 padel) and zeroed stats. Every signed-in user can read every profile — no per-user visibility flag.
+- `usernames/{u}` lock document guarantees username uniqueness via a Firestore transaction; the doc id IS the lowercase username.
+- Security rules live at `firestore.rules` (deploy manually from the Firebase console — no `firebase-tools` in repo yet). Rules forbid clients from mutating `elo`, `username`, `stats`, `createdAt` after creation.
+- Anonymous users skip the profile step.
+- `:wear` is untouched — still anonymous-only, no profile.
+
+### Planned (not implemented)
 
 ### Storage
 
