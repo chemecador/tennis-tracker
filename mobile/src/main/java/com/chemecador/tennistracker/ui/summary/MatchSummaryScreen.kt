@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.chemecador.tennistracker.core.match.MatchSessionViewModel.SaveState
 import com.chemecador.tennistracker.scoring.MatchState
 import com.chemecador.tennistracker.scoring.SetScore
 import com.chemecador.tennistracker.scoring.Side
@@ -29,14 +33,25 @@ import com.chemecador.tennistracker.scoring.TieBreakScore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
+fun MatchSummaryScreen(
+    state: MatchState?,
+    saveState: SaveState,
+    onRetrySave: () -> Unit,
+    onNewMatch: () -> Unit,
+) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Resumen del partido") }) },
     ) { padding ->
         if (state == null) {
             EmptyState(padding)
         } else {
-            SummaryContent(state = state, padding = padding, onNewMatch = onNewMatch)
+            SummaryContent(
+                state = state,
+                saveState = saveState,
+                padding = padding,
+                onRetrySave = onRetrySave,
+                onNewMatch = onNewMatch,
+            )
         }
     }
 }
@@ -57,7 +72,9 @@ private fun EmptyState(padding: PaddingValues) {
 @Composable
 private fun SummaryContent(
     state: MatchState,
+    saveState: SaveState,
     padding: PaddingValues,
+    onRetrySave: () -> Unit,
     onNewMatch: () -> Unit,
 ) {
     val winnerName = when (state.winner) {
@@ -114,11 +131,50 @@ private fun SummaryContent(
 
         Spacer(Modifier.weight(1f))
 
+        SaveStatusRow(saveState = saveState, onRetry = onRetrySave)
+
         Button(
             onClick = onNewMatch,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Nuevo partido")
+        }
+    }
+}
+
+@Composable
+private fun SaveStatusRow(saveState: SaveState, onRetry: () -> Unit) {
+    when (saveState) {
+        SaveState.Idle -> Unit
+        SaveState.Saving -> Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+            Text(
+                text = "Guardando partido…",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        is SaveState.Saved -> Text(
+            text = "Partido guardado",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        is SaveState.Error -> Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Error al guardar",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+            TextButton(onClick = onRetry) {
+                Text("Reintentar")
+            }
         }
     }
 }

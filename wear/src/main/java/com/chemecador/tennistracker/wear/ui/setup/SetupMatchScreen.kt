@@ -15,19 +15,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.SwitchButton
 import androidx.wear.compose.material3.Text
+import com.chemecador.tennistracker.core.data.match.OpponentRef
 import com.chemecador.tennistracker.scoring.FinalSetMode
 import com.chemecador.tennistracker.scoring.MatchConfig
-import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 
 @Composable
-fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
+fun SetupMatchScreen(onStart: (MatchConfig, OpponentRef) -> Unit) {
     var bestOfSets by remember { mutableStateOf(3) }
     var finalSetMode by remember { mutableStateOf(FinalSetMode.TIEBREAK_7) }
     var goldenPoint by remember { mutableStateOf(false) }
@@ -98,14 +99,16 @@ fun SetupMatchScreen(onStart: (MatchConfig) -> Unit) {
             item {
                 Button(
                     onClick = {
+                        val playerB = "B"
                         onStart(
                             MatchConfig(
                                 bestOfSets = bestOfSets,
                                 finalSetMode = finalSetMode,
                                 goldenPoint = goldenPoint,
                                 playerNameA = "A",
-                                playerNameB = "B",
-                            )
+                                playerNameB = playerB,
+                            ),
+                            OpponentRef.Guest(playerB),
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),

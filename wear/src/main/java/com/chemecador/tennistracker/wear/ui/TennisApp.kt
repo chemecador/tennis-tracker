@@ -34,6 +34,7 @@ fun TennisApp() {
             val user by authVm.user.collectAsStateWithLifecycle()
             val sessionVm: MatchSessionViewModel = koinViewModel()
             val state by sessionVm.state.collectAsStateWithLifecycle()
+            val saveState by sessionVm.saveState.collectAsStateWithLifecycle()
 
             LaunchedEffect(user) {
                 if (user != null && nav.currentDestination?.route == Routes.LOGIN) {
@@ -62,8 +63,8 @@ fun TennisApp() {
                 }
                 composable(Routes.SETUP) {
                     SetupMatchScreen(
-                        onStart = { config ->
-                            sessionVm.start(config)
+                        onStart = { config, opponent ->
+                            sessionVm.start(config, opponent)
                             nav.navigate(Routes.MATCH)
                         },
                     )
@@ -74,6 +75,8 @@ fun TennisApp() {
                 composable(Routes.SUMMARY) {
                     MatchSummaryScreen(
                         state = state,
+                        saveState = saveState,
+                        onRetrySave = sessionVm::retrySave,
                         onNewMatch = {
                             sessionVm.reset()
                             nav.popToSetup()

@@ -31,9 +31,13 @@ dependencies {
 
     api(platform(libs.firebase.bom))
     api(libs.firebase.auth)
+    api(libs.firebase.firestore)
     api(libs.kotlinx.coroutines.play.services)
 
     api(platform(libs.koin.bom))
     api(libs.koin.core)
     api(libs.koin.android)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

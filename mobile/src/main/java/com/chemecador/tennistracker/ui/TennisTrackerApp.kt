@@ -110,6 +110,7 @@ private fun LoadingScreen() {
 private fun MatchFlow(uid: String, profile: UserProfile?, onOpenProfile: () -> Unit) {
     val sessionVm: MatchSessionViewModel = koinViewModel()
     val state by sessionVm.state.collectAsStateWithLifecycle()
+    val saveState by sessionVm.saveState.collectAsStateWithLifecycle()
     var step by remember { mutableStateOf(Step.SETUP) }
 
     val winner = state?.winner
@@ -121,8 +122,8 @@ private fun MatchFlow(uid: String, profile: UserProfile?, onOpenProfile: () -> U
         Step.SETUP -> SetupMatchScreen(
             myUid = uid,
             myProfile = profile,
-            onStart = { config ->
-                sessionVm.start(config)
+            onStart = { config, opponent ->
+                sessionVm.start(config, opponent)
                 step = Step.MATCH
             },
             onOpenProfile = onOpenProfile,
@@ -138,6 +139,8 @@ private fun MatchFlow(uid: String, profile: UserProfile?, onOpenProfile: () -> U
 
         Step.SUMMARY -> MatchSummaryScreen(
             state = state,
+            saveState = saveState,
+            onRetrySave = sessionVm::retrySave,
             onNewMatch = {
                 sessionVm.reset()
                 step = Step.SETUP

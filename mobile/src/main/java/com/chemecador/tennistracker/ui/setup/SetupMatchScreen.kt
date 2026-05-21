@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.chemecador.tennistracker.core.data.match.OpponentRef
 import com.chemecador.tennistracker.data.profile.UserProfile
 import com.chemecador.tennistracker.scoring.FinalSetMode
 import com.chemecador.tennistracker.scoring.MatchConfig
@@ -70,7 +71,7 @@ sealed interface OpponentSelection {
 fun SetupMatchScreen(
     myUid: String,
     myProfile: UserProfile?,
-    onStart: (MatchConfig) -> Unit,
+    onStart: (MatchConfig, OpponentRef) -> Unit,
     onOpenProfile: () -> Unit,
 ) {
     var bestOfSets by remember { mutableStateOf(3) }
@@ -131,6 +132,15 @@ fun SetupMatchScreen(
                         is OpponentSelection.Guest -> sel.name.ifBlank { "Invitado" }
                     }
                 }
+                val opponentRef: OpponentRef = if (isAnonymous) {
+                    OpponentRef.Guest(playerB)
+                } else {
+                    when (val sel = opponent) {
+                        is OpponentSelection.Registered -> OpponentRef.Registered(sel.profile.uid)
+                        is OpponentSelection.Guest -> OpponentRef.Guest(playerB)
+                        OpponentSelection.None -> OpponentRef.Guest(playerB)
+                    }
+                }
                 onStart(
                     MatchConfig(
                         bestOfSets = bestOfSets,
@@ -138,7 +148,8 @@ fun SetupMatchScreen(
                         goldenPoint = goldenPoint,
                         playerNameA = playerA,
                         playerNameB = playerB,
-                    )
+                    ),
+                    opponentRef,
                 )
             },
         )

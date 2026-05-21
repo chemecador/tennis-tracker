@@ -19,13 +19,19 @@ import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
+import com.chemecador.tennistracker.core.match.MatchSessionViewModel.SaveState
 import com.chemecador.tennistracker.scoring.MatchState
 import com.chemecador.tennistracker.scoring.SetScore
 import com.chemecador.tennistracker.scoring.Side
 import com.chemecador.tennistracker.scoring.TieBreakScore
 
 @Composable
-fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
+fun MatchSummaryScreen(
+    state: MatchState?,
+    saveState: SaveState,
+    onRetrySave: () -> Unit,
+    onNewMatch: () -> Unit,
+) {
     val listState = rememberScalingLazyListState()
     ScreenScaffold(scrollState = listState) { contentPadding ->
         ScalingLazyColumn(
@@ -111,6 +117,45 @@ fun MatchSummaryScreen(state: MatchState?, onNewMatch: () -> Unit) {
             }
 
             item { Spacer(Modifier.height(4.dp)) }
+
+            when (saveState) {
+                SaveState.Idle -> Unit
+                SaveState.Saving -> item {
+                    Text(
+                        text = "Guardando…",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                is SaveState.Saved -> item {
+                    Text(
+                        text = "Guardado",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                is SaveState.Error -> {
+                    item {
+                        Text(
+                            text = "Error al guardar",
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                    item {
+                        Button(
+                            onClick = onRetrySave,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            }
 
             item {
                 Button(

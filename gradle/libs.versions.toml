@@ -65,6 +65,7 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 
 # kotlinx-coroutines bridge for Google Play Services Task<T>
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesPlayServices" }
 
 # credential manager (mobile Google Sign-In)
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
